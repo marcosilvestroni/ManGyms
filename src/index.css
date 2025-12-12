@@ -4,13 +4,20 @@
   font-weight: 400;
 
   /* Colors */
-  --color-primary: #3b82f6; /* Blue 500 */
-  --color-primary-hover: #2563eb; /* Blue 600 */
-  --color-background: #f3f4f6; /* Gray 100 */
-  --color-surface: rgba(255, 255, 255, 0.7); /* Glass */
-  --color-text: #1f2937; /* Gray 800 */
-  --color-text-secondary: #4b5563; /* Gray 600 */
-  --color-border: rgba(229, 231, 235, 0.5); /* Gray 200 */
+  --color-primary: #3b82f6;
+  /* Blue 500 */
+  --color-primary-hover: #2563eb;
+  /* Blue 600 */
+  --color-background: #f3f4f6;
+  /* Gray 100 */
+  --color-surface: rgba(255, 255, 255, 0.7);
+  /* Glass */
+  --color-text: #1f2937;
+  /* Gray 800 */
+  --color-text-secondary: #4b5563;
+  /* Gray 600 */
+  --color-border: rgba(229, 231, 235, 0.5);
+  /* Gray 200 */
 
   /* Glassmorphism */
   --glass-bg: rgba(255, 255, 255, 0.7);
@@ -28,7 +35,8 @@
 body {
   margin: 0;
   display: flex;
-  place-items: flex-start; /* Changed from center */
+  place-items: flex-start;
+  /* Changed from center */
   min-width: 320px;
   min-height: 100vh;
   background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
@@ -58,6 +66,18 @@ body {
   cursor: pointer;
   font-weight: 500;
   transition: background-color 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
 }
 
 .btn:hover {

@@ -1,5 +1,6 @@
 import type { Gym, Group, Match } from "../types";
 import { v4 as uuidv4 } from "uuid";
+import { MOCK_GYMS, MOCK_GROUPS, MOCK_MATCHES } from "./mockData";
 
 const KEYS = {
   GYMS: "gyms",
@@ -76,9 +77,35 @@ export const storage = {
     storage.setItem(KEYS.MATCHES, [...matches, newMatch]);
     return newMatch;
   },
+  updateMatch: async (match: Match): Promise<Match> => {
+    const matches = await storage.getMatches();
+    const index = matches.findIndex((m) => m.id === match.id);
+    if (index !== -1) {
+      matches[index] = match;
+      storage.setItem(KEYS.MATCHES, matches);
+    }
+    return match;
+  },
   deleteMatch: async (id: string): Promise<void> => {
     const matches = await storage.getMatches();
     const filtered = matches.filter((m) => m.id !== id);
     storage.setItem(KEYS.MATCHES, filtered);
+  },
+
+  // Initialize with mock data if empty
+  initializeData: async (): Promise<void> => {
+    const [gyms, groups, matches] = await Promise.all([
+      storage.getGyms(),
+      storage.getGroups(),
+      storage.getMatches(),
+    ]);
+
+    // Only initialize if ALL are empty
+    if (gyms.length === 0 && groups.length === 0 && matches.length === 0) {
+      storage.setItem(KEYS.GYMS, MOCK_GYMS);
+      storage.setItem(KEYS.GROUPS, MOCK_GROUPS);
+      storage.setItem(KEYS.MATCHES, MOCK_MATCHES);
+      console.log("Initialized storage with mock data");
+    }
   },
 };

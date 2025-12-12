@@ -3,7 +3,9 @@ import { storage } from "../services/storage";
 import type { Match, Group, Gym } from "../types";
 import { findConflictsForSlot } from "../utils/conflictDetector";
 import Modal from "../components/Modal";
-import { Plus, Trash, Trophy, Repeat } from "lucide-react";
+import { Plus, Trash, Trophy, Repeat, Edit } from "lucide-react";
+import { format } from "date-fns";
+import { TIME_SLOTS } from "../utils/timeSlots";
 import "./GroupsPage.css"; // Reusing styles
 
 export default function MatchesPage() {
@@ -11,11 +13,11 @@ export default function MatchesPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [gyms, setGyms] = useState<Gym[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingMatch, setEditingMatch] = useState<Match | null>(null);
 
   // Form State
   const [groupId, setGroupId] = useState("");
   const [gymId, setGymId] = useState("");
-  const [opponent, setOpponent] = useState("");
   const [type, setType] = useState<"one-off" | "recurring">("one-off");
 
   // One-off fields
@@ -51,6 +53,40 @@ export default function MatchesPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleOpenModal = (match?: Match) => {
+    if (match) {
+      setEditingMatch(match);
+      setGroupId(match.groupId);
+      setGymId(match.gymId);
+      setType(match.type);
+      if (match.type === "one-off") {
+        setDate(match.date || "");
+      } else {
+        setDayOfWeek(match.dayOfWeek || "");
+        setValidFrom(match.validFrom || "");
+        setValidTo(match.validTo || "");
+        setRecurrenceInterval(match.recurrenceInterval || 1);
+      }
+      setStartTime(match.startTime);
+      setEndTime(match.endTime);
+    } else {
+      setEditingMatch(null);
+      setGroupId("");
+      setGymId("");
+      setType("one-off");
+      setDate(new Date().toISOString().split("T")[0]);
+      setDayOfWeek("");
+      setValidFrom(new Date().toISOString().split("T")[0]);
+      const d = new Date();
+      d.setMonth(d.getMonth() + 3);
+      setValidTo(d.toISOString().split("T")[0]);
+      setRecurrenceInterval(1);
+      setStartTime("18:00");
+      setEndTime("20:00");
+    }
+    setIsModalOpen(true);
+  };
 
   const handleSave = async () => {
     if (!groupId || !gymId) {
@@ -128,10 +164,24 @@ export default function MatchesPage() {
       return;
     }
 
-    await storage.addMatch({
+    if (editingMatch) {
+      await storage.updateMatch({
+        ...editingMatch,
+        groupId,
+        gymId,
+        type,
+        date: type === "one-off" ? date : undefined,
+        dayOfWeek: type === "recurring" ? dayOfWeek : undefined,
+        validFrom: type === "recurring" ? validFrom : undefined,
+        validTo: type === "recurring" ? validTo : undefined,
+        recurrenceInterval: type === "recurring" ? recurrenceInterval : undefined,
+        startTime,
+        endTime,
+      });
+    } else {
+      await storage.addMatch({
       groupId,
       gymId,
-      opponent,
       type,
       // One-off
       date: type === "one-off" ? date : undefined,
@@ -144,6 +194,7 @@ export default function MatchesPage() {
       startTime,
       endTime,
     });
+    }
 
     setIsModalOpen(false);
     loadData();
@@ -165,7 +216,7 @@ export default function MatchesPage() {
     <div className="page">
       <header className="page-header flex-between">
         <h1>Partite</h1>
-        <button className="btn" onClick={() => setIsModalOpen(true)}>
+        <button className="btn" onClick={() => handleOpenModal()}>
           <Plus size={20} /> Nuova Partita
         </button>
       </header>
@@ -181,7 +232,7 @@ export default function MatchesPage() {
               <Trophy className="text-primary" color="orange" />
               <div>
                 <h3>
-                  {getGroupName(match.groupId)} vs {match.opponent || "TBD"}
+                  {getGroupName(match.groupId)}
                   {match.type === "recurring" && (
                     <span
                       style={{
@@ -199,6 +250,8 @@ export default function MatchesPage() {
                 <div style={{ fontSize: "0.8rem", color: "#666" }}>
                   {match.type === "one-off"
                     ? match.date
+                      ? format(new Date(match.date), "dd/MM/yyyy")
+                      : ""
                     : `${
                         match.dayOfWeek
                           ? {
@@ -219,6 +272,12 @@ export default function MatchesPage() {
             </div>
             <div className="group-actions">
               <button
+                className="btn-icon"
+                onClick={() => handleOpenModal(match)}
+              >
+                <Edit size={18} />
+              </button>
+              <button
                 className="btn-icon text-danger"
                 onClick={() => handleDelete(match.id)}
               >
@@ -232,7 +291,7 @@ export default function MatchesPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Nuova Partita"
+        title={editingMatch ? "Modifica Partita" : "Nuova Partita"}
       >
         {/* Toggle Type */}
         <div className="form-group">
@@ -277,15 +336,6 @@ export default function MatchesPage() {
           </select>
         </div>
 
-        <div className="form-group">
-          <label>Avversario</label>
-          <input
-            className="input"
-            value={opponent}
-            onChange={(e) => setOpponent(e.target.value)}
-            placeholder="Nome avversario"
-          />
-        </div>
 
         <div className="form-group">
           <label>Palestra</label>
@@ -369,21 +419,32 @@ export default function MatchesPage() {
         <div className="form-group" style={{ display: "flex", gap: "1rem" }}>
           <div style={{ flex: 1 }}>
             <label>Inizio</label>
-            <input
-              type="time"
+
+            <select
               className="input"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-            />
+            >
+              {TIME_SLOTS.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
           </div>
           <div style={{ flex: 1 }}>
             <label>Fine</label>
-            <input
-              type="time"
+            <select
               className="input"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-            />
+            >
+              {TIME_SLOTS.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

@@ -4,6 +4,8 @@ import type { Group, Gym, TimeSlot, Schedule, Conflict } from "../types";
 import { findConflictsForSlot } from "../utils/conflictDetector";
 import Modal from "../components/Modal";
 import { Plus, Edit, Trash, Users } from "lucide-react";
+
+import { TIME_SLOTS } from "../utils/timeSlots";
 import "./GroupsPage.css";
 
 export default function GroupsPage() {
@@ -361,23 +363,33 @@ export default function GroupsPage() {
                         </option>
                       ))}
                     </select>
-                    <input
-                      type="time"
+                    <select
                       value={slot.startTime}
                       onChange={(e) =>
                         updateSlot(day, idx, "startTime", e.target.value)
                       }
                       className="input input-sm"
-                    />
+                    >
+                      {TIME_SLOTS.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
                     <span>-</span>
-                    <input
-                      type="time"
+                    <select
                       value={slot.endTime}
                       onChange={(e) =>
                         updateSlot(day, idx, "endTime", e.target.value)
                       }
                       className="input input-sm"
-                    />
+                    >
+                      {TIME_SLOTS.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
                     <button
                       className="btn-icon text-danger"
                       onClick={() => removeSlot(day, idx)}

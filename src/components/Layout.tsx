@@ -15,7 +15,7 @@ export default function Layout() {
       {/* Sidebar (Desktop) */}
       <aside className="sidebar glass-panel">
         <div className="logo">
-          <img src="/logo-transparent.png" alt="ManGyms" style={{ width: 120, height: 120 }} />
+          <img src="/logo-transparent.png" alt="ManGyms" style={{ width: 240, height: 240 }} />
         </div>
         <nav>
           <NavLink
