@@ -15,8 +15,7 @@ export default function Layout() {
       {/* Sidebar (Desktop) */}
       <aside className="sidebar glass-panel">
         <div className="logo">
-          <Dumbbell size={32} className="text-primary" />
-          <h1>GymSched</h1>
+          <img src="/logo-transparent.png" alt="ManGyms" style={{ width: 120, height: 120 }} />
         </div>
         <nav>
           <NavLink
